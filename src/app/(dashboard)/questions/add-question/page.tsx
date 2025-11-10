@@ -16,7 +16,6 @@ import {
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-// ✅ Fixed: Remove trailing space
 const BASE_URL = "https://medijoddha.save71.net";
 
 interface Option {
@@ -80,12 +79,8 @@ export default function AddQuestionPage() {
   // Fetch subjects on mount
   useEffect(() => {
     const fetchSubjects = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) return;
       try {
-        const res = await fetch(`${BASE_URL}/api/subjects?page=1&limit=100`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const res = await fetch(`${BASE_URL}/api/subjects?page=1&limit=100`);
         const data = await res.json();
         setSubjects(data.subjects || []);
       } catch (err) {
@@ -104,12 +99,9 @@ export default function AddQuestionPage() {
     }
 
     const fetchChapters = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) return;
       try {
         const res = await fetch(
-          `${BASE_URL}/api/chapters?page=1&limit=10&subject_id=${subjectId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          `${BASE_URL}/api/chapters?page=1&limit=10&subject_id=${subjectId}`
         );
         const data = await res.json();
         setChapters(data.chapters || []);
@@ -130,12 +122,9 @@ export default function AddQuestionPage() {
     }
 
     const fetchTopics = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) return;
       try {
         const res = await fetch(
-          `${BASE_URL}/api/topics?chapter_id=${chapterId}&page=1&limit=10`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          `${BASE_URL}/api/topics?chapter_id=${chapterId}&page=1&limit=10`
         );
         const data = await res.json();
         setTopics(data.topics || []);
@@ -156,12 +145,9 @@ export default function AddQuestionPage() {
     }
 
     const fetchBookRefs = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) return;
       try {
         const res = await fetch(
-          `${BASE_URL}/api/book-refs?page=1&limit=10&subject_id=${subjectId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          `${BASE_URL}/api/book-refs?page=1&limit=10&subject_id=${subjectId}`
         );
         const data = await res.json();
         setBookRefs(data.books || []);
@@ -201,12 +187,6 @@ export default function AddQuestionPage() {
     setIsSubmitting(true);
 
     try {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        alert("You must be logged in");
-        return;
-      }
-
       const formData = new FormData();
       formData.append("subject_id", subjectId);
       if (chapterId) formData.append("chapter_id", chapterId);
@@ -242,7 +222,6 @@ export default function AddQuestionPage() {
 
       const res = await fetch(`${BASE_URL}/api/questions`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 
@@ -261,7 +240,7 @@ export default function AddQuestionPage() {
     }
   };
 
-  // ✅ Safe mapping for options
+  // Safe mapping for options
   const optionConfig = [
     {
       value: option1,
@@ -382,7 +361,11 @@ export default function AddQuestionPage() {
             <Input
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
+              placeholder="Enter your question"
             />
+            {errors.question && (
+              <p className="text-red-500 text-sm">{errors.question}</p>
+            )}
           </div>
 
           {/* Answer */}
@@ -391,14 +374,22 @@ export default function AddQuestionPage() {
             <Input
               value={answer}
               onChange={(e) => setAnswer(e.target.value.toUpperCase())}
+              placeholder="Enter answer (A, B, C, D, or E)"
               maxLength={1}
             />
+            {errors.answer && (
+              <p className="text-red-500 text-sm">{errors.answer}</p>
+            )}
           </div>
 
           {/* Description */}
           <div className="space-y-2">
             <Label>Description (Optional)</Label>
-            <Input value={des} onChange={(e) => setDes(e.target.value)} />
+            <Input
+              value={des}
+              onChange={(e) => setDes(e.target.value)}
+              placeholder="Enter description (optional)"
+            />
           </div>
 
           {/* Options with Images */}

@@ -25,11 +25,11 @@ import Image from "next/image";
 
 const BASE_URL = "https://medijoddha.save71.net";
 
-// Or if you prefer interface:
-interface Option {
+// Define Option type
+type Option = {
   id: number;
   name: string;
-}
+};
 
 export interface QuestionItem {
   id: number;
@@ -96,6 +96,7 @@ function ImageThumb({
     </div>
   );
 }
+
 // Improved ImageViewer component
 function ImageViewer({
   src,
@@ -117,7 +118,6 @@ function ImageViewer({
           className="object-contain max-w-full max-h-full"
           unoptimized
           onError={(e) => {
-            // Fallback if image fails to load
             console.error(`Failed to load image: ${src}`);
             (e.target as HTMLImageElement).style.display = "none";
           }}
@@ -186,7 +186,6 @@ function ViewQuestionModal({ question }: { question: QuestionItem }) {
             <div>
               <p className="font-medium mb-1">Question:</p>
               <p className="whitespace-pre-wrap">{question.question}</p>
-              {/* Fixed: Check if question_image exists */}
               {question.question_image && (
                 <ImageViewer src={question.question_image} alt="Question" />
               )}
@@ -205,7 +204,6 @@ function ViewQuestionModal({ question }: { question: QuestionItem }) {
               <div>
                 <p className="font-medium mb-1">Description:</p>
                 <p>{question.des}</p>
-                {/* Fixed: Check if des_image exists */}
                 {question.des_image && (
                   <ImageViewer src={question.des_image} alt="Description" />
                 )}
@@ -236,9 +234,7 @@ function ViewQuestionModal({ question }: { question: QuestionItem }) {
                         {opt.key}
                       </span>
                       <div className="min-w-0 flex-1">
-                        {/* Show option text if it exists */}
                         {opt.value && <p className="mb-2">{opt.value}</p>}
-                        {/* Show option image if it exists */}
                         {opt.image && (
                           <ImageViewer
                             src={opt.image}
@@ -289,12 +285,8 @@ function EditQuestionModal({ question }: { question: QuestionItem }) {
   useEffect(() => {
     if (isOpen) {
       const fetchSubjects = async () => {
-        const token = localStorage.getItem("authToken");
-        if (!token) return;
         try {
-          const res = await fetch(`${BASE_URL}/api/subjects?page=1&limit=100`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
+          const res = await fetch(`${BASE_URL}/api/subjects?page=1&limit=100`);
           const data = await res.json();
           setSubjects(data.subjects || []);
         } catch (err) {
@@ -313,12 +305,9 @@ function EditQuestionModal({ question }: { question: QuestionItem }) {
     }
 
     const fetchChapters = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) return;
       try {
         const res = await fetch(
-          `${BASE_URL}/api/chapters?page=1&limit=10&subject_id=${form.subject_id}`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          `${BASE_URL}/api/chapters?page=1&limit=10&subject_id=${form.subject_id}`
         );
         const data = await res.json();
         setChapters(data.chapters || []);
@@ -338,12 +327,9 @@ function EditQuestionModal({ question }: { question: QuestionItem }) {
     }
 
     const fetchTopics = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) return;
       try {
         const res = await fetch(
-          `${BASE_URL}/api/topics?chapter_id=${form.chapter_id}&page=1&limit=10`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          `${BASE_URL}/api/topics?chapter_id=${form.chapter_id}&page=1&limit=10`
         );
         const data = await res.json();
         setTopics(data.topics || []);
@@ -363,12 +349,9 @@ function EditQuestionModal({ question }: { question: QuestionItem }) {
     }
 
     const fetchBookRefs = async () => {
-      const token = localStorage.getItem("authToken");
-      if (!token) return;
       try {
         const res = await fetch(
-          `${BASE_URL}/api/book-refs?page=1&limit=10&subject_id=${form.subject_id}`,
-          { headers: { Authorization: `Bearer ${token}` } }
+          `${BASE_URL}/api/book-refs?page=1&limit=10&subject_id=${form.subject_id}`
         );
         const data = await res.json();
         setBookRefs(data.books || []);
@@ -394,12 +377,6 @@ function EditQuestionModal({ question }: { question: QuestionItem }) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      alert("No authentication token found");
-      return;
-    }
-
     setUploadLoading(field);
 
     const formData = new FormData();
@@ -409,9 +386,6 @@ function EditQuestionModal({ question }: { question: QuestionItem }) {
     try {
       const res = await fetch(`${BASE_URL}/api/questions/${question.id}`, {
         method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
         body: formData,
       });
 
@@ -459,18 +433,11 @@ function EditQuestionModal({ question }: { question: QuestionItem }) {
   };
 
   const handleSave = async () => {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      alert("No authentication token found");
-      return;
-    }
-
     setLoading(true);
     try {
       const res = await fetch(`${BASE_URL}/api/questions/${question.id}`, {
         method: "PUT",
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify(form),
@@ -926,12 +893,12 @@ function EditQuestionModal({ question }: { question: QuestionItem }) {
                 </div>
                 <p className="text-xs text-gray-600 mt-2">
                   {form.is_draft && form.is_published
-                    ? "⚠️ Question cannot be both draft and published. Please choose one status."
+                    ? "Question cannot be both draft and published. Please choose one status."
                     : form.is_draft
-                    ? "📝 This question is in draft mode and not visible to users."
+                    ? "This question is in draft mode and not visible to users."
                     : form.is_published
-                    ? "✅ This question is published and visible to users."
-                    : "❓ This question has no status set."}
+                    ? "This question is published and visible to users."
+                    : "This question has no status set."}
                 </p>
               </div>
             </div>
@@ -971,20 +938,16 @@ function EditQuestionModal({ question }: { question: QuestionItem }) {
   );
 }
 
-// ✅ Delete Modal
+// Delete Modal
 function DeleteQuestionModal({ id }: { id: number }) {
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {
-    const token = localStorage.getItem("authToken");
-    if (!token) return;
-
     setLoading(true);
     try {
       const res = await fetch(`${BASE_URL}/api/questions/${id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) window.location.reload();
     } catch (err) {
@@ -1029,7 +992,7 @@ function DeleteQuestionModal({ id }: { id: number }) {
   );
 }
 
-// ✅ Table Columns
+// Table Columns
 export const questionColumns: ColumnDef<QuestionItem>[] = [
   { accessorKey: "id", header: "ID" },
   {
