@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -40,6 +41,13 @@ export default function AddQuestionPage() {
   const [option5, setOption5] = useState("");
 
   // Image previews
+  const [questionImagePreview, setQuestionImagePreview] = useState<
+    string | null
+  >(null);
+  const [answerImagePreview, setAnswerImagePreview] = useState<string | null>(
+    null
+  );
+  const [desImagePreview, setDesImagePreview] = useState<string | null>(null);
   const [option1ImagePreview, setOption1ImagePreview] = useState<string | null>(
     null
   );
@@ -55,6 +63,9 @@ export default function AddQuestionPage() {
   const [option5ImagePreview, setOption5ImagePreview] = useState<string | null>(
     null
   );
+
+  // Text paste state
+  const [pastedText, setPastedText] = useState("");
 
   // File input refs
   const questionImageRef = useRef<HTMLInputElement | null>(null);
@@ -172,6 +183,129 @@ export default function AddQuestionPage() {
     ref.current?.click();
   };
 
+  // Parse pasted text and fill form fields
+  const parseAndFillForm = () => {
+    if (!pastedText.trim()) {
+      alert("Please paste some text first");
+      return;
+    }
+
+    // Split by double newlines (paragraphs)
+    const paragraphs = pastedText.split(/\n\s*\n/).filter((p) => p.trim());
+
+    if (paragraphs.length < 2) {
+      alert(
+        "Please provide at least question and options separated by empty lines"
+      );
+      return;
+    }
+
+    // First paragraph is always the question
+    const questionText = paragraphs[0].trim();
+    setQuestion(questionText);
+
+    // Second paragraph contains options (separated by single newlines)
+    const optionsParagraph = paragraphs[1];
+    const optionLines = optionsParagraph
+      .split("\n")
+      .filter((line) => line.trim());
+
+    // Extract options (remove A., B., etc. prefixes if present)
+    const options = optionLines.map((line) => {
+      // Remove common prefixes like A., B., 1., 2., etc.
+      return line.replace(/^[A-E][\.\)\-\s]+/i, "").trim();
+    });
+
+    // Set options
+    const optionSetters = [
+      setOption1,
+      setOption2,
+      setOption3,
+      setOption4,
+      setOption5,
+    ];
+    optionSetters.forEach((setter, index) => {
+      if (index < options.length) {
+        setter(options[index]);
+      } else {
+        setter(""); // Clear any previous options
+      }
+    });
+
+    // Third paragraph could be answer or description
+    if (paragraphs.length >= 3) {
+      const thirdParagraph = paragraphs[2].trim();
+
+      // Check if this paragraph contains the answer (look for A/B/C/D/E)
+      const answerMatch = thirdParagraph.match(/\b([A-E])\b/i);
+      if (answerMatch) {
+        setAnswer(answerMatch[1].toUpperCase());
+
+        // If there's a fourth paragraph, it's the description
+        if (paragraphs.length >= 4) {
+          setDes(paragraphs.slice(3).join("\n\n").trim());
+        } else {
+          setDes("");
+        }
+      } else {
+        // Third paragraph is description, answer might be in options or we need to detect it
+        setDes(paragraphs.slice(2).join("\n\n").trim());
+
+        // Try to find answer in the options paragraph or description
+        findAndSetAnswer(
+          optionsParagraph + "\n\n" + paragraphs.slice(2).join("\n\n")
+        );
+      }
+    } else {
+      // Only question and options provided, try to find answer in options
+      findAndSetAnswer(optionsParagraph);
+    }
+
+    alert("Form fields filled from pasted text!");
+  };
+
+  // Helper function to find and set answer from text
+  const findAndSetAnswer = (text: string) => {
+    // Look for patterns like "Answer: A", "Ans: B", "Correct: C", etc.
+    const answerPatterns = [
+      /(?:answer|ans|correct)[:\s]+([A-E])/i,
+      /\(([A-E])\)/,
+      /\b([A-E])\b.*?(?:answer|correct)/i,
+    ];
+
+    for (const pattern of answerPatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        setAnswer(match[1].toUpperCase());
+        return;
+      }
+    }
+
+    // If no clear answer found, leave it empty for manual input
+    setAnswer("");
+  };
+
+  // Clear all form fields
+  const clearForm = () => {
+    setQuestion("");
+    setAnswer("");
+    setDes("");
+    setOption1("");
+    setOption2("");
+    setOption3("");
+    setOption4("");
+    setOption5("");
+    setPastedText("");
+    setQuestionImagePreview(null);
+    setAnswerImagePreview(null);
+    setDesImagePreview(null);
+    setOption1ImagePreview(null);
+    setOption2ImagePreview(null);
+    setOption3ImagePreview(null);
+    setOption4ImagePreview(null);
+    setOption5ImagePreview(null);
+  };
+
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     if (!subjectId) newErrors.subjectId = "Subject is required";
@@ -284,6 +418,48 @@ export default function AddQuestionPage() {
       <h2 className="text-xl font-semibold mb-6">Add New Question</h2>
       <Card>
         <CardContent className="p-6 space-y-6">
+          {/* Text Paste Area */}
+          <div className="space-y-4 border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
+            <Label className="text-lg font-medium">Paste Question Text</Label>
+            <p className="text-sm text-gray-600">
+              Paste your question text below. Format: Question (first
+              paragraph), Options (optional, second paragraph, one per line),
+              Answer (auto-detected), Description (optional, subsequent
+              paragraphs)
+            </p>
+
+            <Textarea
+              value={pastedText}
+              onChange={(e) => setPastedText(e.target.value)}
+              placeholder={`Example:
+কোনটি নিউক্লিয়াসের গাঠনিক উপাদান?
+
+সিস্টার্নি
+ভেসিকল
+ক্রিস্টি
+ক্রোমোসোম
+
+D
+
+ক্রোমোজোম হল একটি দীর্ঘ ডিএনএ অণু যাতে একটি জীবের জিনগত উপাদানের একটি অংশ বা সমস্ত অংশ বিদ্যমান থাকে। বেশিরভাগ প্রকৃতকোষী (ইউক্যারিওটিক) জীবের ক্রোমোজোমে প্যাকেজিং প্রোটিন থাকে যাকে হিস্টোন বলা হয় যা ক্রমোজোমের অখণ্ডতা বজায় রাখতে চ্যাপেরোন প্রোটিনের সাহায্যে ডিএনএ অণুকে আবদ্ধ করে এবং ঘনীভূত করে।`}
+              rows={8}
+              className="w-full"
+            />
+
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                onClick={parseAndFillForm}
+                className="flex-1"
+              >
+                Parse & Fill Form
+              </Button>
+              <Button type="button" variant="outline" onClick={clearForm}>
+                Clear All
+              </Button>
+            </div>
+          </div>
+
           {/* Subject */}
           <div className="space-y-2">
             <Label htmlFor="subject">Subject *</Label>
@@ -358,7 +534,7 @@ export default function AddQuestionPage() {
           {/* Question */}
           <div className="space-y-2">
             <Label>Question *</Label>
-            <Input
+            <Textarea
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               placeholder="Enter your question"
@@ -366,6 +542,40 @@ export default function AddQuestionPage() {
             {errors.question && (
               <p className="text-red-500 text-sm">{errors.question}</p>
             )}
+
+            {/* Question Image Upload */}
+            <div className="flex items-center gap-4 mt-2">
+              {questionImagePreview ? (
+                <div className="w-16 h-16 relative rounded overflow-hidden border">
+                  <Image
+                    src={questionImagePreview}
+                    alt="Question Preview"
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
+              ) : (
+                <div className="w-16 h-16 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
+                  No image
+                </div>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => triggerFileSelect(questionImageRef)}
+              >
+                Choose Question Image
+              </Button>
+              <input
+                type="file"
+                ref={questionImageRef}
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, setQuestionImagePreview)}
+                className="hidden"
+              />
+            </div>
           </div>
 
           {/* Answer */}
@@ -380,6 +590,40 @@ export default function AddQuestionPage() {
             {errors.answer && (
               <p className="text-red-500 text-sm">{errors.answer}</p>
             )}
+
+            {/* Answer Image Upload */}
+            <div className="flex items-center gap-4 mt-2">
+              {answerImagePreview ? (
+                <div className="w-16 h-16 relative rounded overflow-hidden border">
+                  <Image
+                    src={answerImagePreview}
+                    alt="Answer Preview"
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
+              ) : (
+                <div className="w-16 h-16 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
+                  No image
+                </div>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => triggerFileSelect(answerImageRef)}
+              >
+                Choose Answer Image
+              </Button>
+              <input
+                type="file"
+                ref={answerImageRef}
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, setAnswerImagePreview)}
+                className="hidden"
+              />
+            </div>
           </div>
 
           {/* Description */}
@@ -390,6 +634,40 @@ export default function AddQuestionPage() {
               onChange={(e) => setDes(e.target.value)}
               placeholder="Enter description (optional)"
             />
+
+            {/* Description Image Upload */}
+            <div className="flex items-center gap-4 mt-2">
+              {desImagePreview ? (
+                <div className="w-16 h-16 relative rounded overflow-hidden border">
+                  <Image
+                    src={desImagePreview}
+                    alt="Description Preview"
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
+              ) : (
+                <div className="w-16 h-16 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
+                  No image
+                </div>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => triggerFileSelect(desImageRef)}
+              >
+                Choose Description Image
+              </Button>
+              <input
+                type="file"
+                ref={desImageRef}
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, setDesImagePreview)}
+                className="hidden"
+              />
+            </div>
           </div>
 
           {/* Options with Images */}
@@ -411,7 +689,7 @@ export default function AddQuestionPage() {
                     <div className="w-16 h-16 relative rounded overflow-hidden border">
                       <Image
                         src={config.preview}
-                        alt="Preview"
+                        alt={`Option ${letter} Preview`}
                         fill
                         className="object-cover"
                         unoptimized
