@@ -112,7 +112,7 @@ export default function AddQuestionPage() {
     const fetchChapters = async () => {
       try {
         const res = await fetch(
-          `${BASE_URL}/api/chapters?page=1&limit=10&subject_id=${subjectId}`
+          `${BASE_URL}/api/chapters?subject_id=${subjectId}`
         );
         const data = await res.json();
         setChapters(data.chapters || []);

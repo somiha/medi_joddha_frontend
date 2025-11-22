@@ -286,7 +286,7 @@ function EditQuestionModal({ question }: { question: QuestionItem }) {
     if (isOpen) {
       const fetchSubjects = async () => {
         try {
-          const res = await fetch(`${BASE_URL}/api/subjects?page=1&limit=100`);
+          const res = await fetch(`${BASE_URL}/api/subjects?page=1&limit=200`);
           const data = await res.json();
           setSubjects(data.subjects || []);
         } catch (err) {
@@ -307,7 +307,7 @@ function EditQuestionModal({ question }: { question: QuestionItem }) {
     const fetchChapters = async () => {
       try {
         const res = await fetch(
-          `${BASE_URL}/api/chapters?page=1&limit=10&subject_id=${form.subject_id}`
+          `${BASE_URL}/api/chapters?page=1&limit=200&subject_id=${form.subject_id}`
         );
         const data = await res.json();
         setChapters(data.chapters || []);
@@ -329,7 +329,7 @@ function EditQuestionModal({ question }: { question: QuestionItem }) {
     const fetchTopics = async () => {
       try {
         const res = await fetch(
-          `${BASE_URL}/api/topics?chapter_id=${form.chapter_id}&page=1&limit=10`
+          `${BASE_URL}/api/topics?chapter_id=${form.chapter_id}&page=1&limit=200`
         );
         const data = await res.json();
         setTopics(data.topics || []);
@@ -351,7 +351,7 @@ function EditQuestionModal({ question }: { question: QuestionItem }) {
     const fetchBookRefs = async () => {
       try {
         const res = await fetch(
-          `${BASE_URL}/api/book-refs?page=1&limit=10&subject_id=${form.subject_id}`
+          `${BASE_URL}/api/book-refs?page=1&limit=200&subject_id=${form.subject_id}`
         );
         const data = await res.json();
         setBookRefs(data.books || []);
