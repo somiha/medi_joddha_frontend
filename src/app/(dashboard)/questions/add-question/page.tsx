@@ -112,7 +112,7 @@ export default function AddQuestionPage() {
     const fetchChapters = async () => {
       try {
         const res = await fetch(
-          `${BASE_URL}/api/chapters?subject_id=${subjectId}`
+          `${BASE_URL}/api/chapters?page=1&limit=200&subject_id=${subjectId}`
         );
         const data = await res.json();
         setChapters(data.chapters || []);
@@ -135,7 +135,7 @@ export default function AddQuestionPage() {
     const fetchTopics = async () => {
       try {
         const res = await fetch(
-          `${BASE_URL}/api/topics?chapter_id=${chapterId}&page=1&limit=10`
+          `${BASE_URL}/api/topics?chapter_id=${chapterId}&page=1&limit=200`
         );
         const data = await res.json();
         setTopics(data.topics || []);
@@ -158,7 +158,7 @@ export default function AddQuestionPage() {
     const fetchBookRefs = async () => {
       try {
         const res = await fetch(
-          `${BASE_URL}/api/book-refs?page=1&limit=10&subject_id=${subjectId}`
+          `${BASE_URL}/api/book-refs?page=1&limit=200&subject_id=${subjectId}`
         );
         const data = await res.json();
         setBookRefs(data.books || []);
