@@ -358,9 +358,23 @@ export function UserTable({
                 ) : error ? (
                   <div className="text-red-500 p-4">{error}</div>
                 ) : (
+                  // <DataTable
+                  //   columns={getColumns(userType)}
+                  //   data={filteredUsers}
+                  //   meta={{
+                  //     updateUser,
+                  //     deleteUser,
+                  //     refetchData: fetchUsers,
+                  //   }}
+                  // />
                   <DataTable
                     columns={getColumns(userType)}
                     data={filteredUsers}
+                    totalItems={filteredUsers.length}
+                    pageIndex={0}
+                    pageSize={1000} // or filteredUsers.length — ensures all shown
+                    onPageChange={() => {}}
+                    onPageSizeChange={() => {}}
                     meta={{
                       updateUser,
                       deleteUser,
