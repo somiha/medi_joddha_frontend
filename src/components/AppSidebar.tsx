@@ -13,7 +13,7 @@ import {
   // Coins,
   FileText,
   // Settings,
-  // Globe,
+  Globe,
   // Tag,
   // Database,
   // Newspaper,
@@ -21,7 +21,7 @@ import {
   // Banknote,
   // ChartNoAxesCombined,
   // BookOpen,
-  // Building,
+  Building,
 } from "lucide-react";
 import {
   Sidebar,
@@ -55,6 +55,9 @@ interface MenuItem {
 
 const adminItems: MenuItem[] = [
   { name: "Dashboard", icon: LayoutDashboard, href: "/" },
+  { name: "Programs", icon: Building, href: "/programs" },
+  { name: "Courses", icon: Globe, href: "/courses" },
+  { name: "Subjects", icon: Globe, href: "/subjects" },
   { name: "Questions", icon: FileText, href: "/questions" },
 ];
 

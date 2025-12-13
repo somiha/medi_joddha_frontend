@@ -3,7 +3,7 @@
 import { DataTable } from "./../app/(dashboard)/data-table"; // Adjust path as needed
 import { getColumns } from "@/components/columns";
 import { User } from "@/components/columns";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -89,7 +89,7 @@ export function UserTable({
     { value: string; label: string }[]
   >([{ value: "all", label: "All Admins" }]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -212,6 +212,7 @@ export function UserTable({
             : null,
         }));
       }
+
       const adminSet = new Set<string>();
       allUsers.forEach((user) => {
         if (user.admin?.name) {
@@ -230,7 +231,6 @@ export function UserTable({
       ];
 
       setUniqueAdmins(adminOptions);
-
       setUsers(allUsers);
     } catch (err) {
       setError(
@@ -239,7 +239,12 @@ export function UserTable({
     } finally {
       setLoading(false);
     }
-  };
+  }, [userType]); // Add dependencies that fetchUsers uses
+
+  // Then in your useEffect:
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   const updateUser = (userId: string, updates: Partial<User>) => {
     setUsers((prevUsers) =>
@@ -256,7 +261,7 @@ export function UserTable({
   // ✅ useEffect: Only re-fetch when userType changes
   useEffect(() => {
     fetchUsers();
-  }, [userType]);
+  }, [userType, fetchUsers]);
 
   const filteredUsers = users.filter((user) => {
     const query = searchQuery.toLowerCase();

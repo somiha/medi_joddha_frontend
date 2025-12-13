@@ -1,13 +1,13 @@
 // app/questions/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { questionColumns, QuestionItem } from "./columns";
 import { DataTable } from "../data-table"; // Make sure this is the updated version
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
-const BASE_URL = "https://medijoddha.save71.net"; // 🔸 removed trailing spaces!
+const BASE_URL = "https://medijoddha.save71.net";
 
 interface ApiResponse {
   questions: QuestionItem[];
@@ -27,7 +27,7 @@ export default function QuestionsPage() {
   const [currentPage, setCurrentPage] = useState<number>(1); // 1-based to match API
   const [pageSize, setPageSize] = useState<number>(8); // default page size
 
-  const fetchQuestions = async () => {
+  const fetchQuestions = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -56,12 +56,12 @@ export default function QuestionsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, pageSize]); // Add dependencies
 
-  // 🔁 Fetch whenever currentPage or pageSize changes
+  // Then in useEffect
   useEffect(() => {
     fetchQuestions();
-  }, [currentPage, pageSize]);
+  }, [fetchQuestions]);
 
   // Reset to page 1 when page size changes
   const handlePageSizeChange = (newSize: number) => {

@@ -1,4 +1,4 @@
-// app/questions/add/page.tsx
+// app/questions/add-question/page.tsx
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -91,7 +91,23 @@ export default function AddQuestionPage() {
   useEffect(() => {
     const fetchSubjects = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/api/subjects?page=1&limit=100`);
+        const token =
+          typeof window !== "undefined"
+            ? localStorage.getItem("authToken")
+            : null;
+
+        if (!token) {
+          console.error("No token found");
+          return;
+        }
+
+        const res = await fetch(`${BASE_URL}/api/subjects?page=1&limit=100`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
         const data = await res.json();
         setSubjects(data.subjects || []);
       } catch (err) {
