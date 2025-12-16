@@ -58,6 +58,7 @@ const adminItems: MenuItem[] = [
   { name: "Programs", icon: Building, href: "/programs" },
   { name: "Courses", icon: Globe, href: "/courses" },
   { name: "Subjects", icon: Globe, href: "/subjects" },
+  { name: "Chapters", icon: FileText, href: "/chapters" },
   { name: "Questions", icon: FileText, href: "/questions" },
 ];
 

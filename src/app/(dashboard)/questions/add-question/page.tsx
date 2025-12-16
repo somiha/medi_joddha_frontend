@@ -303,6 +303,7 @@ export default function AddQuestionPage() {
 
   // Clear all form fields
   const clearForm = () => {
+    // Clear only the form fields, NOT the dropdown selections
     setQuestion("");
     setAnswer("");
     setDes("");
@@ -320,6 +321,16 @@ export default function AddQuestionPage() {
     setOption3ImagePreview(null);
     setOption4ImagePreview(null);
     setOption5ImagePreview(null);
+
+    // Reset file inputs
+    if (questionImageRef.current) questionImageRef.current.value = "";
+    if (answerImageRef.current) answerImageRef.current.value = "";
+    if (desImageRef.current) desImageRef.current.value = "";
+    if (option1ImageRef.current) option1ImageRef.current.value = "";
+    if (option2ImageRef.current) option2ImageRef.current.value = "";
+    if (option3ImageRef.current) option3ImageRef.current.value = "";
+    if (option4ImageRef.current) option4ImageRef.current.value = "";
+    if (option5ImageRef.current) option5ImageRef.current.value = "";
   };
 
   const validateForm = () => {
@@ -370,15 +381,53 @@ export default function AddQuestionPage() {
       appendImage(option4ImageRef, "option4_image");
       appendImage(option5ImageRef, "option5_image");
 
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("authToken")
+          : null;
+
       const res = await fetch(`${BASE_URL}/api/questions`, {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: formData,
       });
 
       const result = await res.json();
       if (res.ok && result.question) {
         alert("Question added successfully!");
-        router.push("/questions");
+        // Clear only form fields but keep dropdown selections
+        setQuestion("");
+        setAnswer("");
+        setDes("");
+        setOption1("");
+        setOption2("");
+        setOption3("");
+        setOption4("");
+        setOption5("");
+        setPastedText("");
+        setQuestionImagePreview(null);
+        setAnswerImagePreview(null);
+        setDesImagePreview(null);
+        setOption1ImagePreview(null);
+        setOption2ImagePreview(null);
+        setOption3ImagePreview(null);
+        setOption4ImagePreview(null);
+        setOption5ImagePreview(null);
+
+        // Reset file inputs
+        if (questionImageRef.current) questionImageRef.current.value = "";
+        if (answerImageRef.current) answerImageRef.current.value = "";
+        if (desImageRef.current) desImageRef.current.value = "";
+        if (option1ImageRef.current) option1ImageRef.current.value = "";
+        if (option2ImageRef.current) option2ImageRef.current.value = "";
+        if (option3ImageRef.current) option3ImageRef.current.value = "";
+        if (option4ImageRef.current) option4ImageRef.current.value = "";
+        if (option5ImageRef.current) option5ImageRef.current.value = "";
+
+        // Keep dropdown selections as they were
+        // Don't navigate away, stay on the same page
       } else {
         alert(result.message || "Failed to add question");
       }
@@ -434,6 +483,81 @@ export default function AddQuestionPage() {
       <h2 className="text-xl font-semibold mb-6">Add New Question</h2>
       <Card>
         <CardContent className="p-6 space-y-6">
+          {/* Subject, Chapter, Topic, Book Ref in one line two rows */}
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* First row */}
+              <div className="space-y-2">
+                <Label htmlFor="subject">Subject *</Label>
+                <Select value={subjectId} onValueChange={setSubjectId}>
+                  <SelectTrigger id="subject">
+                    <SelectValue placeholder="Select Subject" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {subjects.map((s) => (
+                      <SelectItem key={s.id} value={String(s.id)}>
+                        {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {errors.subjectId && (
+                  <p className="text-red-500 text-sm">{errors.subjectId}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="chapter">Chapter (Optional)</Label>
+                <Select value={chapterId} onValueChange={setChapterId}>
+                  <SelectTrigger id="chapter">
+                    <SelectValue placeholder="Select Chapter" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {chapters.map((c) => (
+                      <SelectItem key={c.id} value={String(c.id)}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Second row */}
+              <div className="space-y-2">
+                <Label htmlFor="topic">Topic (Optional)</Label>
+                <Select value={topicId} onValueChange={setTopicId}>
+                  <SelectTrigger id="topic">
+                    <SelectValue placeholder="Select Topic" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {topics.map((t) => (
+                      <SelectItem key={t.id} value={String(t.id)}>
+                        {t.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="bookRef">Book Reference (Optional)</Label>
+                <Select value={bookRefId} onValueChange={setBookRefId}>
+                  <SelectTrigger id="bookRef">
+                    <SelectValue placeholder="Select Book Reference" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {bookRefs.map((b) => (
+                      <SelectItem key={b.id} value={String(b.id)}>
+                        {b.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
           {/* Text Paste Area */}
           <div className="space-y-4 border-2 border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
             <Label className="text-lg font-medium">Paste Question Text</Label>
@@ -471,82 +595,10 @@ D
                 Parse & Fill Form
               </Button>
               <Button type="button" variant="outline" onClick={clearForm}>
-                Clear All
+                Clear All Fields
               </Button>
             </div>
           </div>
-
-          {/* Subject */}
-          <div className="space-y-2">
-            <Label htmlFor="subject">Subject *</Label>
-            <Select value={subjectId} onValueChange={setSubjectId}>
-              <SelectTrigger id="subject">
-                <SelectValue placeholder="Select Subject" />
-              </SelectTrigger>
-              <SelectContent>
-                {subjects.map((s) => (
-                  <SelectItem key={s.id} value={String(s.id)}>
-                    {s.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.subjectId && (
-              <p className="text-red-500 text-sm">{errors.subjectId}</p>
-            )}
-          </div>
-
-          {/* Chapter */}
-          <div className="space-y-2">
-            <Label htmlFor="chapter">Chapter (Optional)</Label>
-            <Select value={chapterId} onValueChange={setChapterId}>
-              <SelectTrigger id="chapter">
-                <SelectValue placeholder="Select Chapter" />
-              </SelectTrigger>
-              <SelectContent>
-                {chapters.map((c) => (
-                  <SelectItem key={c.id} value={String(c.id)}>
-                    {c.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Topic */}
-          <div className="space-y-2">
-            <Label htmlFor="topic">Topic (Optional)</Label>
-            <Select value={topicId} onValueChange={setTopicId}>
-              <SelectTrigger id="topic">
-                <SelectValue placeholder="Select Topic" />
-              </SelectTrigger>
-              <SelectContent>
-                {topics.map((t) => (
-                  <SelectItem key={t.id} value={String(t.id)}>
-                    {t.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Book Reference */}
-          <div className="space-y-2">
-            <Label htmlFor="bookRef">Book Reference (Optional)</Label>
-            <Select value={bookRefId} onValueChange={setBookRefId}>
-              <SelectTrigger id="bookRef">
-                <SelectValue placeholder="Select Book Reference" />
-              </SelectTrigger>
-              <SelectContent>
-                {bookRefs.map((b) => (
-                  <SelectItem key={b.id} value={String(b.id)}>
-                    {b.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* Question */}
           <div className="space-y-2">
             <Label>Question *</Label>
@@ -593,99 +645,6 @@ D
               />
             </div>
           </div>
-
-          {/* Answer */}
-          <div className="space-y-2">
-            <Label>Answer (A/B/C/D/E) *</Label>
-            <Input
-              value={answer}
-              onChange={(e) => setAnswer(e.target.value.toUpperCase())}
-              placeholder="Enter answer (A, B, C, D, or E)"
-              maxLength={1}
-            />
-            {errors.answer && (
-              <p className="text-red-500 text-sm">{errors.answer}</p>
-            )}
-
-            {/* Answer Image Upload */}
-            <div className="flex items-center gap-4 mt-2">
-              {answerImagePreview ? (
-                <div className="w-16 h-16 relative rounded overflow-hidden border">
-                  <Image
-                    src={answerImagePreview}
-                    alt="Answer Preview"
-                    fill
-                    className="object-cover"
-                    unoptimized
-                  />
-                </div>
-              ) : (
-                <div className="w-16 h-16 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
-                  No image
-                </div>
-              )}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => triggerFileSelect(answerImageRef)}
-              >
-                Choose Answer Image
-              </Button>
-              <input
-                type="file"
-                ref={answerImageRef}
-                accept="image/*"
-                onChange={(e) => handleFileChange(e, setAnswerImagePreview)}
-                className="hidden"
-              />
-            </div>
-          </div>
-
-          {/* Description */}
-          <div className="space-y-2">
-            <Label>Description (Optional)</Label>
-            <Input
-              value={des}
-              onChange={(e) => setDes(e.target.value)}
-              placeholder="Enter description (optional)"
-            />
-
-            {/* Description Image Upload */}
-            <div className="flex items-center gap-4 mt-2">
-              {desImagePreview ? (
-                <div className="w-16 h-16 relative rounded overflow-hidden border">
-                  <Image
-                    src={desImagePreview}
-                    alt="Description Preview"
-                    fill
-                    className="object-cover"
-                    unoptimized
-                  />
-                </div>
-              ) : (
-                <div className="w-16 h-16 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
-                  No image
-                </div>
-              )}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => triggerFileSelect(desImageRef)}
-              >
-                Choose Description Image
-              </Button>
-              <input
-                type="file"
-                ref={desImageRef}
-                accept="image/*"
-                onChange={(e) => handleFileChange(e, setDesImagePreview)}
-                className="hidden"
-              />
-            </div>
-          </div>
-
           {/* Options with Images */}
           {optionConfig.map((config, idx) => {
             const letter = String.fromCharCode(65 + idx); // A, B, C...
@@ -735,15 +694,113 @@ D
               </div>
             );
           })}
+          {/* Answer */}
+          <div className="space-y-2">
+            <Label>Answer (A/B/C/D/E) *</Label>
+            <Input
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value.toUpperCase())}
+              placeholder="Enter answer (A, B, C, D, or E)"
+              maxLength={1}
+            />
+            {errors.answer && (
+              <p className="text-red-500 text-sm">{errors.answer}</p>
+            )}
 
-          {/* Submit */}
-          <Button
-            className="w-full text-white hover:opacity-90"
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Saving..." : "Save Question"}
-          </Button>
+            {/* Answer Image Upload */}
+            <div className="flex items-center gap-4 mt-2">
+              {answerImagePreview ? (
+                <div className="w-16 h-16 relative rounded overflow-hidden border">
+                  <Image
+                    src={answerImagePreview}
+                    alt="Answer Preview"
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
+              ) : (
+                <div className="w-16 h-16 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
+                  No image
+                </div>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => triggerFileSelect(answerImageRef)}
+              >
+                Choose Answer Image
+              </Button>
+              <input
+                type="file"
+                ref={answerImageRef}
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, setAnswerImagePreview)}
+                className="hidden"
+              />
+            </div>
+          </div>
+          {/* Description */}
+          <div className="space-y-2">
+            <Label>Description (Optional)</Label>
+            <Input
+              value={des}
+              onChange={(e) => setDes(e.target.value)}
+              placeholder="Enter description (optional)"
+            />
+
+            {/* Description Image Upload */}
+            <div className="flex items-center gap-4 mt-2">
+              {desImagePreview ? (
+                <div className="w-16 h-16 relative rounded overflow-hidden border">
+                  <Image
+                    src={desImagePreview}
+                    alt="Description Preview"
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
+              ) : (
+                <div className="w-16 h-16 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
+                  No image
+                </div>
+              )}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => triggerFileSelect(desImageRef)}
+              >
+                Choose Description Image
+              </Button>
+              <input
+                type="file"
+                ref={desImageRef}
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, setDesImagePreview)}
+                className="hidden"
+              />
+            </div>
+          </div>
+          \{/* Submit */}
+          <div className="flex gap-3">
+            <Button
+              className="flex-1 text-white hover:opacity-90"
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Saving..." : "Save Question"}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/questions")}
+            >
+              Back to Questions
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

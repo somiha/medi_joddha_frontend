@@ -129,7 +129,7 @@ export default function SignInPage() {
       <Card className="w-full max-w-md bg-[#f9fafb] shadow-xl rounded-2xl">
         <CardContent className="p-8">
           <h1 className="text-3xl font-bold mb-1 text-primary text-center">
-            Welcome to License Course Admin Panel!
+            Welcome to Medijoddha Admin Panel!
           </h1>
           <p className="text-gray-500 text-sm mb-6 text-center">
             Sign in to continue
