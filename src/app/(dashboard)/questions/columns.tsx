@@ -363,11 +363,29 @@ function EditQuestionModal({ question }: { question: QuestionItem }) {
     fetchBookRefs();
   }, [form.subject_id]);
 
+  // const handleChange = <K extends keyof QuestionItem>(
+  //   key: K,
+  //   value: QuestionItem[K]
+  // ) => {
+  //   setForm((prev) => ({ ...prev, [key]: value }));
+  // };
+
   const handleChange = <K extends keyof QuestionItem>(
     key: K,
     value: QuestionItem[K]
   ) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
+    setForm((prev) => {
+      const newForm = { ...prev, [key]: value };
+
+      // Ensure draft and published are mutually exclusive
+      if (key === "is_draft" && value === true) {
+        newForm.is_published = false;
+      } else if (key === "is_published" && value === true) {
+        newForm.is_draft = false;
+      }
+
+      return newForm;
+    });
   };
 
   const handleFileUpload = async (
@@ -432,15 +450,55 @@ function EditQuestionModal({ question }: { question: QuestionItem }) {
     }
   };
 
+  // const handleSave = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const res = await fetch(`${BASE_URL}/api/questions/${question.id}`, {
+  //       method: "PUT",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(form),
+  //     });
+
+  //     const result = await res.json();
+
+  //     if (res.ok) {
+  //       alert("Question updated successfully!");
+  //       window.location.reload();
+  //     } else {
+  //       alert(`Update failed: ${result.message || "Unknown error"}`);
+  //     }
+  //   } catch (err) {
+  //     console.error("Save error:", err);
+  //     alert("Update failed - check console for details");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleSave = async () => {
     setLoading(true);
     try {
+      // Convert boolean values to strings as expected by backend
+      const dataToSend = {
+        ...form,
+        is_draft: form.is_draft ? "true" : "false",
+        is_published: form.is_published ? "true" : "false",
+        // Ensure other fields are properly formatted
+        subject_id: form.subject_id,
+        chapter_id: form.chapter_id || null,
+        topic_id: form.topic_id || null,
+        book_ref_id: form.book_ref_id || null,
+        answer: form.answer.toUpperCase(),
+      };
+
       const res = await fetch(`${BASE_URL}/api/questions/${question.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify(dataToSend),
       });
 
       const result = await res.json();
@@ -458,7 +516,6 @@ function EditQuestionModal({ question }: { question: QuestionItem }) {
       setLoading(false);
     }
   };
-
   const removeImage = (field: keyof QuestionItem) => {
     if (confirm("Are you sure you want to remove this image?")) {
       handleChange(field, null);
@@ -466,16 +523,19 @@ function EditQuestionModal({ question }: { question: QuestionItem }) {
   };
 
   // Toggle status handlers
+  // Toggle status handlers - simplified
   const toggleDraftStatus = () => {
-    handleChange("is_draft", !form.is_draft);
-    if (!form.is_draft) {
+    const newDraftStatus = !form.is_draft;
+    handleChange("is_draft", newDraftStatus);
+    if (newDraftStatus) {
       handleChange("is_published", false);
     }
   };
 
   const togglePublishStatus = () => {
-    handleChange("is_published", !form.is_published);
-    if (!form.is_published) {
+    const newPublishedStatus = !form.is_published;
+    handleChange("is_published", newPublishedStatus);
+    if (newPublishedStatus) {
       handleChange("is_draft", false);
     }
   };

@@ -32,6 +32,8 @@ export default function AddQuestionPage() {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [des, setDes] = useState("");
+  const [isDraft, setIsDraft] = useState(false);
+  const [isPublished, setIsPublished] = useState(true);
 
   // Options text
   const [option1, setOption1] = useState("");
@@ -362,6 +364,9 @@ export default function AddQuestionPage() {
       if (option4) formData.append("option4", option4);
       if (option5) formData.append("option5", option5);
       formData.append("uploadFolder", "questions");
+
+      formData.append("is_draft", "false");
+      formData.append("is_published", "true");
 
       // Helper to safely append image
       const appendImage = (
@@ -784,7 +789,49 @@ D
               />
             </div>
           </div>
-          \{/* Submit */}
+
+          {/* Publish Settings */}
+          <div className="space-y-3 border rounded-lg p-4 bg-gray-50">
+            <Label className="text-sm font-medium">Publish Status</Label>
+
+            <div className="flex items-center gap-6">
+              {/* Published */}
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="publish_status"
+                  checked={isPublished}
+                  onChange={() => {
+                    setIsPublished(true);
+                    setIsDraft(false);
+                  }}
+                  className="accent-green-600"
+                />
+                <span className="text-sm">Published</span>
+              </label>
+
+              {/* Draft */}
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="publish_status"
+                  checked={isDraft}
+                  onChange={() => {
+                    setIsDraft(true);
+                    setIsPublished(false);
+                  }}
+                  className="accent-orange-500"
+                />
+                <span className="text-sm">Save as Draft</span>
+              </label>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              Published questions are visible to users. Drafts are hidden.
+            </p>
+          </div>
+
+          {/* Submit */}
           <div className="flex gap-3">
             <Button
               className="flex-1 text-white hover:opacity-90"
