@@ -62,6 +62,10 @@ const adminItems: MenuItem[] = [
   { name: "Topics", icon: FileText, href: "/topics" },
   { name: "Book References", icon: FileText, href: "/book-refs" },
   { name: "Questions", icon: FileText, href: "/questions" },
+  { name: "Boards", icon: FileText, href: "/boards" },
+  { name: "Board Questions", icon: FileText, href: "/board-questions" },
+  { name: "Schools & Colleges", icon: FileText, href: "/school-colleges" },
+  { name: "Universities", icon: FileText, href: "/universities" },
 ];
 
 const baseMenuItems: MenuItem[] = [];
